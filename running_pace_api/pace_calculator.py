@@ -1,7 +1,13 @@
+"""
+The Running Pace Table API is a FastAPI application designed to calculate running paces for
+various distances.  This API  takes input  parameters  like minimum pace, maximum pace, and
+increment step, and returns a table of  estimated running times for official race distances.
+"""
+
+import math
+from typing import List, Dict
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import List, Dict
-import math
 
 # Official race distances in meters
 OFFICIAL_DISTANCES = [100, 200, 400, 500, 600, 800, 1500, 5000, 10000, 21097, 42195, 100000]
@@ -20,20 +26,6 @@ class TableParameters(BaseModel):
     increment: int
 
 app = FastAPI()
-
-@app.post("/calculate-pace")
-async def calculate_pace(data: Dict):
-    """
-    Endpoint to calculate paces. (This is a placeholder for future implementation)
-
-    Args:
-    data (Dict): The data sent in the request to calculate pace.
-
-    Returns:
-    Dict: A message indicating that calculations are done.
-    """
-    result = {"message": "Calculations done"}
-    return result
 
 @app.post("/generate_table")
 async def generate_table(params: TableParameters):
@@ -64,7 +56,8 @@ def calculate_pace_table(min_pace: int, max_pace: int, increment: int) -> List[D
     increment (int): The increment in seconds per kilometer for each row.
 
     Returns:
-    List[Dict]: A list of dictionaries where each dictionary represents a row in the pace table, with keys being the distances and values being the calculated times.
+    List[Dict]: A list of dictionaries where each dictionary represents a row in the pace table,
+    with keys being the distances and values being the calculated times.
     """
     results = []
     for pace in range(min_pace, max_pace + 1, increment):
@@ -75,4 +68,3 @@ def calculate_pace_table(min_pace: int, max_pace: int, increment: int) -> List[D
         results.append(row)
 
     return results
-
