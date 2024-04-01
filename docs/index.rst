@@ -10,7 +10,8 @@ Welcome to Running Pace API's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   pace_calculator
+   main
+   models
 
 Indices and tables
 ==================
@@ -18,3 +19,15 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+.. _core:
+
+Core Module
+-----------
+
+The ``core`` module contains the main logic for the Running Pace API. It includes functions for calculating running paces and times, as well as scraping world records data from the World Athletics website.
+
+.. toctree::
+   :maxdepth: 2
+
+   core/index

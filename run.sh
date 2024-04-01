@@ -1,1 +1,1 @@
-uvicorn running_pace_api.pace_calculator:app --reload
+uvicorn running_pace_api.main:app --reload
