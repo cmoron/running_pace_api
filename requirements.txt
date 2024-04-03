@@ -1,2 +1,5 @@
 fastapi
 uvicorn
+bs4
+lxml
+requests
