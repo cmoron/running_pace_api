@@ -3,10 +3,12 @@ The Running Pace Table API is a FastAPI application designed to calculate runnin
 various distances.  This API  takes input  parameters  like minimum pace, maximum pace, and
 increment step, and returns a table of  estimated running times for official race distances.
 """
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from running_pace_api.models import TableParameters
-from running_pace_api.core import calculator, scrapper
+from running_pace_api.services import wr_service
+from running_pace_api.services import athletes_service
+from running_pace_api.services import pace_table_service
 
 app = FastAPI()
 
@@ -33,7 +35,7 @@ async def get_world_records():
     Returns:
     dict: A dictionary containing world records for various distances and events.
     """
-    return scrapper.scrap_records_page()
+    return wr_service.get_world_records()
 
 @app.post("/generate_table")
 async def generate_table(params: TableParameters):
@@ -49,6 +51,42 @@ async def generate_table(params: TableParameters):
     Returns:
     List[Dict]: A table of calculated times for each distance at each pace.
     """
-    if params.max_pace >= params.min_pace:
-        raise HTTPException(status_code=400, detail="Minimum pace must be more than maximum pace.")
-    return calculator.calculate_pace_table(params.min_pace, params.max_pace, params.increment)
+    return pace_table_service.get_pace_table(params.min_pace, params.max_pace, params.increment)
+
+@app.get("/get_athletes")
+async def get_athletes(name: str):
+    """
+    Retrieves athlete information from the 'le pistard' database based on the provided athlete name.
+
+    Args:
+    name (str): The name of the athlete to search for.
+
+    Returns:
+    JSON response containing the data of the athletes matched by the search. The data format
+    includes a list of athlete entries with details specific to the 'le pistard' database structure.
+
+    Examples:
+    Response format example (success):
+    [
+        {
+            "birth_date": "1983-04-22",
+            "id": "123",
+            "name": "John Doe",
+            "url": "https://bases.athle.fr/asp.net/athletes.aspx?base=records&seq=453"
+        }
+    ]
+    """
+    return athletes_service.get_athlete(name)
+
+@app.get("/get_athlete_records")
+async def get_athlete_records(ident) -> dict:
+    """
+    Retrieves athlete records from the 'bases.athle.fr' website based on the provided athlete ID.
+
+    Args:
+    ident (str): The ID of the athlete to search for.
+
+    Returns:
+    dict: A dictionary containing the athlete's records for various disciplines and distances.
+    """
+    return athletes_service.get_athlete_records(ident)

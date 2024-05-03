@@ -17,6 +17,16 @@ def calculate_pace_table(min_pace: int, max_pace: int, increment: int) -> List[D
     List[Dict]: A list of dictionaries where each dictionary represents a row in the pace table,
     with keys being the distances and values being the calculated times.
     """
+    # Validate input parameters
+    print(min_pace, max_pace, increment)
+    if min_pace <= 0:
+        raise ValueError("Minimum pace must be positive and greater than zero.")
+    if max_pace >= min_pace:
+        raise ValueError("Minimum pace must be greater than maximum pace.")
+    if increment <= 0:
+        raise ValueError("Increment must be positive and less than the difference between maximum\
+                and minimum pace.")
+
     results = []
     for pace in range(min_pace, max_pace - 1, -increment):
         pace_row = {"pace": pace}
