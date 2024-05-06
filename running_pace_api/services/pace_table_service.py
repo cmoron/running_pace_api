@@ -18,6 +18,6 @@ def get_pace_table(min_pace: int, max_pace: int, increment: int):
     List[Dict]: A list of dictionaries where each dictionary represents a row in the pace table,
     with keys being the distances and values being the calculated times.
     """
-    if max_pace >= min_pace:
+    if max_pace > min_pace:
         raise HTTPException(status_code=400, detail="Minimum pace must be more than maximum pace.")
     return calculator.calculate_pace_table(min_pace, max_pace, increment)

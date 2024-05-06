@@ -18,10 +18,9 @@ def calculate_pace_table(min_pace: int, max_pace: int, increment: int) -> List[D
     with keys being the distances and values being the calculated times.
     """
     # Validate input parameters
-    print(min_pace, max_pace, increment)
     if min_pace <= 0:
         raise ValueError("Minimum pace must be positive and greater than zero.")
-    if max_pace >= min_pace:
+    if max_pace > min_pace:
         raise ValueError("Minimum pace must be greater than maximum pace.")
     if increment <= 0:
         raise ValueError("Increment must be positive and less than the difference between maximum\

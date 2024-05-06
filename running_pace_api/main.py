@@ -48,7 +48,7 @@ async def generate_table(params: TableParameters):
     params (TableParameters): The pace parameters for generating the table.
 
     Raises:
-    HTTPException: If the minimum pace is not less than the maximum pace.
+    HTTPException: If the minimum pace is greater than the maximum pace.
 
     Returns:
     List[Dict]: A table of calculated times for each distance at each pace.
