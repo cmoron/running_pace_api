@@ -19,6 +19,8 @@ allowed_origins = [
     "https://allures.moron.at",
     "http://mypacer.fr",
     "https://mypacer.fr",
+    "http://www.mypacer.fr",
+    "https://www.mypacer.fr",
 ]
 
 app.add_middleware(
