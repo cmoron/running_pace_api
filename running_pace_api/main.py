@@ -82,6 +82,19 @@ async def get_athletes(name: str):
     """
     return athletes_service.get_athlete(name)
 
+@app.get("/get_athletes_from_db")
+async def get_athletes_from_db(name: str):
+    """
+    Retrieves athlete information from the locale database based on the provided athlete name.
+
+    Args:
+    name (str): The name of the athlete to search for.
+
+    Returns:
+    dict: A dictionary containing the athlete's information.
+    """
+    return athletes_service.get_athletes_from_db(name)
+
 @app.get("/get_athlete_records")
 async def get_athlete_records(ident) -> dict:
     """

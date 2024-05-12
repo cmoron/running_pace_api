@@ -2,7 +2,9 @@
 This module contains the service functions for the 'athletes' endpoint.
 """
 
+import sqlite3
 import requests
+from unidecode import unidecode
 from fastapi import HTTPException
 from running_pace_api.core import scrapper
 
@@ -71,6 +73,47 @@ def get_athlete(name: str) -> list:
     else:
         raise HTTPException(status_code=response.status_code,
                             detail="Failed to make an external request")
+
+def get_athletes_from_db(name: str) -> list:
+    """
+    Retrieves athletes informations from local sqlite3 database (bases_athle.db in table athletes) based on the provided athlete name.
+
+    Args:
+    name (str): The name of the athlete to search for.
+
+    Returns:
+    JSON response containing the data of the athletes matched by the search. The data format
+    """
+    local_db = "db/bases_athle.db"
+    conn = sqlite3.connect(local_db)
+    cursor = conn.cursor()
+
+    normalized_query = ' '.join(unidecode(name).lower().strip().split())
+    query_parts = normalized_query.split()
+    where_clause = " AND ".join(["lower(name) LIKE ?" for _ in query_parts])
+    query = f"""
+    SELECT id, name, url, birth_date, license_id, sexe, nationality FROM athletes
+    WHERE {where_clause}
+    LIMIT 25
+    """
+    search_patterns = [f'%{part}%' for part in query_parts]
+
+    cursor.execute(query, search_patterns)
+    results = cursor.fetchall()
+    athletes = []
+    for result in results:
+        athletes.append({
+            'id': result[0],
+            'name': result[1],
+            'url': result[2],
+            'birth_date': result[3],
+            'license_id': result[4],
+            'sexe': result[5],
+            'nationality': result[6],
+            })
+
+    conn.close()
+    return athletes
 
 def get_athlete_records(ident) -> dict:
     """

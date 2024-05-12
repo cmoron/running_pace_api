@@ -244,22 +244,23 @@ def parse_bases_athle_record_page(soup: bs) -> Dict[str, str]:
     athlete_records = {}
 
     # Traiter chaque ligne de données dans la table (sauf l'en-tête)
-    for row in table.find_all('tr')[1:]:  # sauter l'en-tête
-        cols = row.find_all('td')
-        if not cols:  # éviter les lignes sans données
-            continue
-        event = cols[0].get_text(strip=True)
-        performance = cols[1].get_text(strip=True)
+    if table:
+        for row in table.find_all('tr')[1:]:  # sauter l'en-tête
+            cols = row.find_all('td')
+            if not cols:  # éviter les lignes sans données
+                continue
+            event = cols[0].get_text(strip=True)
+            performance = cols[1].get_text(strip=True)
 
-        # Convertir les noms d'épreuve pour correspondre au dictionnaire `distances`
-        event_key = distances.get(event, None)
-        if event_key:
-            # Ajouter le record à la liste des records
-            if event_key in athlete_records:
-                athlete_records[event_key] = min(athlete_records[event_key],
-                                                 ba_convert_time_to_seconds(performance))
-            else:
-                athlete_records[event_key] = ba_convert_time_to_seconds(performance)
+            # Convertir les noms d'épreuve pour correspondre au dictionnaire `distances`
+            event_key = distances.get(event, None)
+            if event_key:
+                # Ajouter le record à la liste des records
+                if event_key in athlete_records:
+                    athlete_records[event_key] = min(athlete_records[event_key],
+                                                     ba_convert_time_to_seconds(performance))
+                else:
+                    athlete_records[event_key] = ba_convert_time_to_seconds(performance)
     return athlete_records
 
 
