@@ -2,11 +2,16 @@
 This module contains the service functions for the 'athletes' endpoint.
 """
 
-import sqlite3
+import os
+import psycopg2
+from psycopg2.extras import RealDictCursor
 import requests
 from unidecode import unidecode
 from fastapi import HTTPException
 from running_pace_api.core import scrapper
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def convert_id_to_url(ident):
     """
@@ -76,44 +81,47 @@ def get_athlete(name: str) -> list:
 
 def get_athletes_from_db(name: str) -> list:
     """
-    Retrieves athletes informations from local sqlite3 database (bases_athle.db in table athletes) based on the provided athlete name.
+    Retrieves athletes information from the PostgreSQL database based on the provided athlete name.
 
     Args:
-    name (str): The name of the athlete to search for.
+        name (str): The name of the athlete to search for.
 
     Returns:
-    JSON response containing the data of the athletes matched by the search. The data format
+        List of dictionaries containing athlete data.
     """
-    local_db = "db/bases_athle.db"
-    conn = sqlite3.connect(local_db)
-    cursor = conn.cursor()
+    db_connection = {
+        'dbname': os.getenv('POSTGRES_DB'),
+        'user': os.getenv('POSTGRES_USER'),
+        'password': os.getenv('POSTGRES_PASSWORD'),
+        'host': 'localhost',
+        'port': '5432'
+    }
 
-    normalized_query = ' '.join(unidecode(name).lower().strip().split())
-    query_parts = normalized_query.split()
-    where_clause = " AND ".join(["lower(name) LIKE ?" for _ in query_parts])
-    query = f"""
-    SELECT id, name, url, birth_date, license_id, sexe, nationality FROM athletes
-    WHERE {where_clause}
-    LIMIT 25
-    """
-    search_patterns = [f'%{part}%' for part in query_parts]
+    try:
+        conn = psycopg2.connect(**db_connection)
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-    cursor.execute(query, search_patterns)
-    results = cursor.fetchall()
-    athletes = []
-    for result in results:
-        athletes.append({
-            'id': result[0],
-            'name': result[1],
-            'url': result[2],
-            'birth_date': result[3],
-            'license_id': result[4],
-            'sexe': result[5],
-            'nationality': result[6],
-            })
+        normalized_query = ' '.join(unidecode(name).lower().strip().split())
+        query_parts = normalized_query.split()
+        where_clause = " AND ".join(["LOWER(name) LIKE %s" for _ in query_parts])
+        query = f"""
+        SELECT id, name, url, birth_date, license_id, sexe, nationality
+        FROM athletes
+        WHERE {where_clause}
+        LIMIT 25
+        """
+        search_patterns = [f'%{part}%' for part in query_parts]
 
-    conn.close()
-    return athletes
+        cursor.execute(query, search_patterns)
+        results = cursor.fetchall()
+
+    except psycopg2.Error as exc:
+        raise HTTPException(status_code=500, detail="Failed to connect to the database.") from exc
+    finally:
+        cursor.close()
+        conn.close()
+
+    return results
 
 def get_athlete_records(ident) -> dict:
     """
