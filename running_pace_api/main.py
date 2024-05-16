@@ -9,6 +9,7 @@ from running_pace_api.models import TableParameters
 from running_pace_api.services import wr_service
 from running_pace_api.services import athletes_service
 from running_pace_api.services import pace_table_service
+from running_pace_api.services import database_service
 
 app = FastAPI()
 
@@ -107,3 +108,15 @@ async def get_athlete_records(ident) -> dict:
     dict: A dictionary containing the athlete's records for various disciplines and distances.
     """
     return athletes_service.get_athlete_records(ident)
+
+@app.get("/database_status")
+async def database_status():
+    """
+    Endpoint to retrieve information about the database state, including
+    the number of clubs, the number of athletes, and the date of the last update.
+
+    Returns:
+        dict: A dictionary containing the number of clubs, number of athletes,
+              and the date of the last update.
+    """
+    return database_service.get_database_status()
