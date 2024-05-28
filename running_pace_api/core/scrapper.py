@@ -199,7 +199,7 @@ def ba_convert_time_to_seconds(time_str: str) -> float:
         # Calculate the total seconds
         total_seconds = int(seconds) + int(centiseconds) / 100
     else:
-        total_seconds = 0
+        total_seconds = -1
     return float(total_seconds)
 
 def parse_bases_athle_record_page(soup: bs) -> Dict[str, str]:
@@ -257,8 +257,9 @@ def parse_bases_athle_record_page(soup: bs) -> Dict[str, str]:
             if event_key:
                 # Ajouter le record à la liste des records
                 if event_key in athlete_records:
-                    athlete_records[event_key] = min(athlete_records[event_key],
-                                                     ba_convert_time_to_seconds(performance))
+                    perf_seconds = ba_convert_time_to_seconds(performance)
+                    if perf_seconds > 0:
+                        athlete_records[event_key] = min(athlete_records[event_key], perf_seconds)
                 else:
                     athlete_records[event_key] = ba_convert_time_to_seconds(performance)
     return athlete_records
