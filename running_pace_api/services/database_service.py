@@ -41,7 +41,7 @@ def get_database_status():
             MAX(last_autoanalyze)
         ) AS last_update
         FROM pg_stat_all_tables
-        WHERE schemaname = 'public';
+        WHERE relname = 'athletes';
         """)
         last_update = cursor.fetchone()[0]
 

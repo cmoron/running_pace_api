@@ -138,7 +138,7 @@ def scrap_records_page(url) -> Dict[str, Dict[int, float]]:
     with discipline distances as keys and record times in seconds as values.
     """
     # Send a HTTP GET request to the URL and get the HTML content
-    response = requests.get(url, timeout=10)
+    response = requests.get(url, timeout=5)
 
     if response.status_code == 200:
         # Parse the HTML page with BeautifulSoup
