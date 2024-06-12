@@ -1,14 +1,16 @@
 #!/bin/bash
 
+script_dir=$(dirname "$(readlink -f "$0")")
+
 # Charger les variables d'environnement
-source "../.env"
+source "$script_dir/../.env"
 
 # Définir les variables
 DB_CONTAINER_NAME="${POSTGRES_CONTAINER}"
 DB_NAME="${POSTGRES_DB}"
 DB_USER="${POSTGRES_USER}"
 DB_PASSWORD="${POSTGRES_PASSWORD}"
-BACKUP_DIR="."
+BACKUP_DIR="${script_dir}"
 TIMESTAMP="$(date +"%Y%m%d%H%M%S")"
 BACKUP_PATH="${BACKUP_DIR}/backup_${DB_NAME}_${TIMESTAMP}.sql"
 
