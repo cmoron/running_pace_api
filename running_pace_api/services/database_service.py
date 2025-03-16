@@ -19,8 +19,8 @@ def get_database_status():
         'dbname': os.getenv('POSTGRES_DB'),
         'user': os.getenv('POSTGRES_USER'),
         'password': os.getenv('POSTGRES_PASSWORD'),
-        'host': 'localhost',
-        'port': '5432'
+        'host': os.getenv('POSTGRES_HOST', 'localhost'),
+        'port': os.getenv('POSTGRES_PORT', '5432')
     }
 
     conn = psycopg2.connect(**db_connection)
