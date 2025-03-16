@@ -14,5 +14,18 @@ services:
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     restart: unless-stopped
 
+  api:
+    build: .
+    container_name: running-pace-api
+    env_file: .env
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_CONTAINER}:5432/${POSTGRES_DB}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    command: uvicorn running_pace_api.main:app --host 0.0.0.0 --port 8000
+
 volumes:
   postgres_data:
