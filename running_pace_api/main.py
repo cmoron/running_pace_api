@@ -56,7 +56,7 @@ async def generate_table(params: TableParameters):
     Returns:
     List[Dict]: A table of calculated times for each distance at each pace.
     """
-    return pace_table_service.get_pace_table(params.min_pace, params.max_pace, params.increment)
+    return pace_table_service.get_pace_table(params.min_pace, params.max_pace, params.increment, params.distances)
 
 @app.get("/get_athletes")
 async def get_athletes(name: str):
@@ -73,12 +73,12 @@ async def get_athletes(name: str):
     Examples:
     Response format example (success):
     [
-        {
-            "birth_date": "1983-04-22",
-            "id": "123",
-            "name": "John Doe",
-            "url": "https://bases.athle.fr/asp.net/athletes.aspx?base=records&seq=453"
-        }
+    {
+    "birth_date": "1983-04-22",
+    "id": "123",
+    "name": "John Doe",
+    "url": "https://bases.athle.fr/asp.net/athletes.aspx?base=records&seq=453"
+    }
     ]
     """
     return athletes_service.get_athlete(name)

@@ -7,7 +7,7 @@ def test_calculate_pace_table():
     increment = 2  # 2 seconds per km
 
     expected_number_of_rows = ((min_pace - max_pace) // increment) + 1
-    result = calculate_pace_table(min_pace, max_pace, increment)
+    result = calculate_pace_table(min_pace, max_pace, increment, OFFICIAL_DISTANCES)
 
     # Check result is not empty
     assert len(result) > 0
@@ -27,6 +27,6 @@ def test_calculate_pace_table():
             assert row[f"{distance}"] == round(expected_time, 2)
 
     # Test with min_pace equals to max_pace
-    result_same_pace = calculate_pace_table(min_pace, min_pace, increment)
+    result_same_pace = calculate_pace_table(min_pace, min_pace, increment, [])
     assert len(result_same_pace) == 1
     assert result_same_pace[0]["pace"] == min_pace

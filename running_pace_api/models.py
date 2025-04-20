@@ -20,3 +20,4 @@ class TableParameters(BaseModel):
     min_pace: int
     max_pace: int
     increment: int
+    distances: list = OFFICIAL_DISTANCES
