@@ -6,7 +6,6 @@ increment step, and returns a table of  estimated running times for official rac
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from running_pace_api.models import TableParameters
-from running_pace_api.services import wr_service
 from running_pace_api.services import athletes_service
 from running_pace_api.services import pace_table_service
 from running_pace_api.services import database_service
@@ -31,16 +30,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-@app.get("/get_world_records")
-async def get_world_records():
-    """
-    Endpoint to retrieve world records from the World Athletics website.
-
-    Returns:
-    dict: A dictionary containing world records for various distances and events.
-    """
-    return wr_service.get_world_records()
 
 @app.post("/generate_table")
 async def generate_table(params: TableParameters):

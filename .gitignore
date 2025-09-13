@@ -35,3 +35,5 @@ __pycache__/
 
 # db generate csv files
 db/*.csv
+
+/.venv
