@@ -9,129 +9,128 @@ import requests
 from unidecode import unidecode
 from fastapi import HTTPException
 from running_pace_api.core import scrapper
+from running_pace_api.core import database
 from dotenv import load_dotenv
 
 load_dotenv()
 
-def convert_id_to_url(ident):
-    """
-    Converts base.athle.fr id to base.athle.fr records url
-
-    Args:
-    ident (str): The id retrieve from lepistard.run
-
-    Returns:
-    url (str) to the base.athle.fr records page
-    """
-    records_url = "https://bases.athle.fr/asp.net/athletes.aspx?base=records&seq="
-    complement = ''.join(f"{99 - ord(c)}{ord(c)}" for c in str(ident))
-
-    return records_url + complement
-
-def get_athlete(name: str) -> list:
-    """
-    Retrieves athlete information from the 'le pistard' database based on the provided athlete name.
-
-    Args:
-    name (str): The name of the athlete to search for.
-
-    Returns:
-    JSON response containing the data of the athletes matched by the search. The data format
-    includes a list of athlete entries with details specific to the 'le pistard' database structure.
-
-    Raises:
-    HTTPException: If the external request fails or the response is not in JSON format.
-
-    Note:
-    This endpoint makes a POST request to 'https://lepistard.run/wp-admin/admin-ajax.php' using
-    the 'get_listing_names' action to search within the 'athlete' table by 'nom' (name) column.
-    The API relies on correct formatting of the request and appropriate handling of the response.
-    """
-    url = "https://lepistard.run/wp-admin/admin-ajax.php"
-    data = {
-            'action': 'get_listing_names',
-            'name': name,
-            'table': "athlete",
-            'column': "nom"
-            }
-    headers = {
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-            }
-
-    response = requests.post(url, data=data, headers=headers, timeout=10)
-    if response.status_code == 200:
-        try:
-            athletes = response.json()
-            transformed_response = [
-                    {
-                        'id': athlete['code'],
-                        'url': convert_id_to_url(athlete['code']),
-                        'name': athlete['nom'],
-                        'birth_date': athlete['date_naissance']
-                        }
-                    for athlete in athletes
-                    ]
-            return transformed_response
-        except ValueError as exc:
-            raise HTTPException(status_code=500,
-                                detail="The response is not in JSON format.") from exc
-    else:
-        raise HTTPException(status_code=response.status_code,
-                            detail="Failed to make an external request")
-
-def get_athletes_from_db(name: str) -> list:
+def get_athletes_from_db(name: str, limit: int = 25, offset: int = 0) -> list:
     """
     Retrieves athletes information from the PostgreSQL database based on the provided athlete name.
 
+    This function uses optimized trigram indexes on normalized_name for fast fuzzy matching.
+    The search query is normalized using the database's normalize_text() function for
+    accent-insensitive and case-insensitive matching.
+
     Args:
         name (str): The name of the athlete to search for.
+        limit (int): Maximum number of results to return (default: 25).
+        offset (int): Number of results to skip for pagination (default: 0).
 
     Returns:
-        List of dictionaries containing athlete data.
+        List of dictionaries containing athlete data, ordered by relevance (similarity score).
     """
-    db_connection = {
-        'dbname': os.getenv('POSTGRES_DB'),
-        'user': os.getenv('POSTGRES_USER'),
-        'password': os.getenv('POSTGRES_PASSWORD'),
-        'host': os.getenv('POSTGRES_HOST', 'localhost'),
-        'port': os.getenv('POSTGRES_PORT', '5432')
-    }
+    conn = None
+    cursor = None
 
     try:
-        conn = psycopg2.connect(**db_connection)
+        # Get connection from pool
+        conn = database.get_connection()
         cursor = conn.cursor(cursor_factory=RealDictCursor)
 
+        # Normalize search query (same logic as database normalize_text function)
         normalized_query = ' '.join(unidecode(name).lower().strip().split())
         query_parts = normalized_query.split()
-        where_clause = " AND ".join(["LOWER(name) LIKE %s" for _ in query_parts])
+
+        # Build WHERE clause using normalized_name and ILIKE for trigram index usage
+        # Each word must be found in the normalized_name (AND logic)
+        where_clause = " AND ".join(["normalized_name ILIKE %s" for _ in query_parts])
+
+        # Optimized query using:
+        # 1. normalized_name (indexed with GIN trigram)
+        # 2. similarity() function for ranking
+        # 3. ILIKE operator (uses trigram index when available)
         query = f"""
-        SELECT id, name, url, birth_date, license_id, sexe, nationality
+        SELECT
+            id,
+            ffa_id,
+            name,
+            url,
+            birth_date,
+            license_id,
+            sexe,
+            nationality,
+            similarity(normalized_name, %s) AS score
         FROM athletes
         WHERE {where_clause}
-        LIMIT 25
+        ORDER BY score DESC, name
+        LIMIT %s OFFSET %s
         """
+
+        # Prepare search patterns for ILIKE (% wildcards for fuzzy matching)
         search_patterns = [f'%{part}%' for part in query_parts]
 
-        cursor.execute(query, search_patterns)
+        # Add the full normalized query for similarity calculation
+        params = [normalized_query] + search_patterns + [limit, offset]
+
+        cursor.execute(query, params)
         results = cursor.fetchall()
 
     except psycopg2.Error as exc:
-        raise HTTPException(status_code=500, detail="Failed to connect to the database.") from exc
+        raise HTTPException(status_code=500, detail=f"Database error: {str(exc)}") from exc
     finally:
-        cursor.close()
-        conn.close()
+        if cursor:
+            cursor.close()
+        if conn:
+            # Return connection to pool instead of closing it
+            database.release_connection(conn)
 
     return results
 
 def get_athlete_records(ident) -> dict:
     """
-    Retrieves athlete records from the 'bases.athle.fr' website based on the provided athlete ID.
+    Retrieves athlete records from the 'athle.fr' website based on the provided athlete ID.
 
     Args:
-    ident (str): The ID of the athlete to search for.
+        ident (str): The ID of the athlete to search for.
 
     Returns:
-    dict: A dictionary containing the athlete's records for various disciplines and distances.
+        dict: A dictionary containing the athlete's records for various disciplines and distances.
     """
-    url = convert_id_to_url(ident)
+    conn = None
+    cursor = None
+
+    try:
+        # Get connection from pool
+        conn = database.get_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+        query = """
+        SELECT url
+        FROM athletes
+        WHERE id = %s
+        LIMIT 1
+        """
+
+        cursor.execute(query, (ident,))
+        result = cursor.fetchone()
+
+        if not result:
+            raise HTTPException(status_code=404, detail="Athlete not found.")
+
+        url = result['url']
+
+    except psycopg2.Error as exc:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(exc)}") from exc
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            # Return connection to pool instead of closing it
+            database.release_connection(conn)
+
+    if not url:
+        raise HTTPException(status_code=404, detail="Athlete URL not found.")
+
+    # Scrape athlete records from FFA website
     return scrapper.scrap_athlete_records(url)

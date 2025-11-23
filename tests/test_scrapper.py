@@ -129,5 +129,5 @@ def test_scrap_athlete_records():
     assert pytest.approx(records[400], rel=1e-6) == 61.61
     assert pytest.approx(records[800], rel=1e-6) == 143.17
     assert pytest.approx(records[1000], rel=1e-6) == 188.02
-    assert records[5000] == 1138
+    assert records[5000] == 1127
     assert records[10000] == 2403

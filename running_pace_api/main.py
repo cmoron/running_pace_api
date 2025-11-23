@@ -48,42 +48,68 @@ async def generate_table(params: TableParameters):
     return pace_table_service.get_pace_table(params.min_pace, params.max_pace, params.increment, params.distances)
 
 @app.get("/get_athletes")
-async def get_athletes(name: str):
+async def get_athletes(name: str, limit: int = 25, offset: int = 0):
     """
-    Retrieves athlete information from the 'le pistard' database based on the provided athlete name.
+    Retrieves athlete information from the local database based on the provided athlete name.
+
+    This endpoint uses optimized trigram indexes for fast fuzzy matching and supports pagination.
+    Results are ordered by relevance (similarity score).
 
     Args:
-    name (str): The name of the athlete to search for.
+        name (str): The name of the athlete to search for.
+        limit (int): Maximum number of results to return (default: 25, max: 100).
+        offset (int): Number of results to skip for pagination (default: 0).
 
     Returns:
-    JSON response containing the data of the athletes matched by the search. The data format
-    includes a list of athlete entries with details specific to the 'le pistard' database structure.
+        List[dict]: A list of athlete dictionaries containing:
+            - id: Athlete identifier
+            - ffa_id: FFA unique identifier
+            - name: Athlete name
+            - url: Link to FFA records page
+            - birth_date: Date of birth
+            - license_id: FFA license number
+            - sexe: Gender (M/F)
+            - nationality: Nationality code
+            - score: Relevance score (0-1)
 
     Examples:
-    Response format example (success):
-    [
-    {
-    "birth_date": "1983-04-22",
-    "id": "123",
-    "name": "John Doe",
-    "url": "https://bases.athle.fr/asp.net/athletes.aspx?base=records&seq=453"
-    }
-    ]
+        GET /get_athletes?name=John Doe
+        GET /get_athletes?name=John Doe&limit=10&offset=0
     """
-    return athletes_service.get_athlete(name)
+    # Limit validation
+    if limit > 100:
+        limit = 100
+    if limit < 1:
+        limit = 1
+    if offset < 0:
+        offset = 0
+
+    return athletes_service.get_athletes_from_db(name, limit=limit, offset=offset)
 
 @app.get("/get_athletes_from_db")
-async def get_athletes_from_db(name: str):
+async def get_athletes_from_db(name: str, limit: int = 25, offset: int = 0):
     """
-    Retrieves athlete information from the locale database based on the provided athlete name.
+    Retrieves athlete information from the local database based on the provided athlete name.
+
+    This is an alias for /get_athletes endpoint for backward compatibility.
 
     Args:
-    name (str): The name of the athlete to search for.
+        name (str): The name of the athlete to search for.
+        limit (int): Maximum number of results to return (default: 25, max: 100).
+        offset (int): Number of results to skip for pagination (default: 0).
 
     Returns:
-    dict: A dictionary containing the athlete's information.
+        List[dict]: A list of athlete dictionaries.
     """
-    return athletes_service.get_athletes_from_db(name)
+    # Limit validation
+    if limit > 100:
+        limit = 100
+    if limit < 1:
+        limit = 1
+    if offset < 0:
+        offset = 0
+
+    return athletes_service.get_athletes_from_db(name, limit=limit, offset=offset)
 
 @app.get("/get_athlete_records")
 async def get_athlete_records(ident) -> dict:

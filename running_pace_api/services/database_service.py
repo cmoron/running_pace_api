@@ -4,6 +4,9 @@ This module contains functions that interact with the database.
 import os
 from dotenv import load_dotenv
 import psycopg2
+from running_pace_api.core import database
+
+load_dotenv()
 
 def get_database_status():
     """
@@ -14,19 +17,14 @@ def get_database_status():
         dict: A dictionary containing the number of clubs, number of athletes,
               and the date of the last update.
     """
-    load_dotenv()
-    db_connection = {
-        'dbname': os.getenv('POSTGRES_DB'),
-        'user': os.getenv('POSTGRES_USER'),
-        'password': os.getenv('POSTGRES_PASSWORD'),
-        'host': os.getenv('POSTGRES_HOST', 'localhost'),
-        'port': os.getenv('POSTGRES_PORT', '5432')
-    }
-
-    conn = psycopg2.connect(**db_connection)
-    cursor = conn.cursor()
+    conn = None
+    cursor = None
 
     try:
+        # Get connection from pool
+        conn = database.get_connection()
+        cursor = conn.cursor()
+
         cursor.execute("SELECT COUNT(*) FROM clubs;")
         num_clubs = cursor.fetchone()[0]
 
@@ -53,5 +51,8 @@ def get_database_status():
     except psycopg2.Error as exc:
         raise exc
     finally:
-        cursor.close()
-        conn.close()
+        if cursor:
+            cursor.close()
+        if conn:
+            # Return connection to pool instead of closing it
+            database.release_connection(conn)
