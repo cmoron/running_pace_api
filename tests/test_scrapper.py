@@ -1,6 +1,6 @@
 import pytest
 from bs4 import BeautifulSoup as bs
-from running_pace_api.core.scrapper import (
+from mypacer_api.core.scrapper import (
     ba_convert_time_to_seconds,
     parse_bases_athle_record_page,
     scrap_athlete_records

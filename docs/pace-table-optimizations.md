@@ -19,7 +19,7 @@ Au chargement initial, tous ces stores s'initialisent quasi-simultanément → *
 
 ### 1. Debouncing côté front-end ✅
 
-**Fichier** : `/home/cyril/src/running_pace_table/src/paceTable/PaceTable.svelte`
+**Fichier** : `<frontend>/src/paceTable/PaceTable.svelte`
 
 #### Changements
 - Ajout d'un **flag `isLoading`** pour empêcher les appels concurrents
@@ -33,7 +33,7 @@ Au chargement initial, tous ces stores s'initialisent quasi-simultanément → *
 
 ### 2. Cache côté serveur ✅
 
-**Fichier** : `/home/cyril/src/running_pace_api/running_pace_api/services/pace_table_service.py`
+**Fichier** : `mypacer_api/services/pace_table_service.py`
 
 #### Changements
 - Ajout d'un cache en mémoire (`_pace_table_cache`)
@@ -47,7 +47,7 @@ Au chargement initial, tous ces stores s'initialisent quasi-simultanément → *
 
 ### 3. Optimisation du calcul ✅
 
-**Fichier** : `/home/cyril/src/running_pace_api/running_pace_api/core/calculator.py`
+**Fichier** : `mypacer_api/core/calculator.py`
 
 #### Changements
 - Pré-calcul des conversions `distance/1000` et `str(distance)`
@@ -71,14 +71,13 @@ Au chargement initial, tous ces stores s'initialisent quasi-simultanément → *
 
 ### 1. Back-end (API)
 ```bash
-cd /home/cyril/src/running_pace_api
-# Le code est déjà modifié, il suffit de redémarrer l'API
-# Via systemd ou docker, selon votre setup
+# Redémarrer l'API pour activer le cache
+# Via systemd, docker, ou uvicorn selon votre setup
 ```
 
 ### 2. Front-end
 ```bash
-cd /home/cyril/src/running_pace_table
+# Dans le répertoire du projet front-end
 npm run build
 # Les fichiers dans dist/ sont prêts pour le déploiement
 ```

@@ -5,10 +5,10 @@ increment step, and returns a table of  estimated running times for official rac
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from running_pace_api.models import TableParameters
-from running_pace_api.services import athletes_service
-from running_pace_api.services import pace_table_service
-from running_pace_api.services import database_service
+from mypacer_api.models import TableParameters
+from mypacer_api.services import athletes_service
+from mypacer_api.services import pace_table_service
+from mypacer_api.services import database_service
 
 app = FastAPI()
 

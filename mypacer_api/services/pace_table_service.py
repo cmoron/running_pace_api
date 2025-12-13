@@ -3,7 +3,7 @@ This module contains the pace table service, which is responsible for generating
 """
 
 from fastapi import HTTPException
-from running_pace_api.core import calculator
+from mypacer_api.core import calculator
 from functools import lru_cache
 
 # Simple cache for pace table results

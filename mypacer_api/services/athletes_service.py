@@ -8,8 +8,8 @@ from psycopg2.extras import RealDictCursor
 import requests
 from unidecode import unidecode
 from fastapi import HTTPException
-from running_pace_api.core import scrapper
-from running_pace_api.core import database
+from mypacer_api.core import scrapper
+from mypacer_api.core import database
 from dotenv import load_dotenv
 
 load_dotenv()

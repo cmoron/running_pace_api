@@ -2,7 +2,7 @@
 
 ## Summary
 
-This document describes the optimizations applied to the `running_pace_api` project to significantly improve search performance and overall API responsiveness.
+This document describes the optimizations applied to the `mypacer_api` project to significantly improve search performance and overall API responsiveness.
 
 ## 🚀 Key Improvements
 
@@ -12,7 +12,7 @@ This document describes the optimizations applied to the `running_pace_api` proj
 
 **Solution:** Implemented connection pooling with `psycopg2.pool.SimpleConnectionPool`
 
-**File:** `running_pace_api/core/database.py` (NEW)
+**File:** `mypacer_api/core/database.py` (NEW)
 
 **Configuration:**
 - Min connections: 2
@@ -137,7 +137,7 @@ LIMIT 25 OFFSET 0
 
 ```bash
 # Start API
-uvicorn running_pace_api.main:app --reload
+uvicorn mypacer_api.main:app --reload
 
 # Test search
 curl "http://localhost:8000/get_athletes?name=moron"

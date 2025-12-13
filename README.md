@@ -1,8 +1,8 @@
-# Running Pace Table API
+# MyPacer API
 
 ## Overview
 
-The Running Pace Table API is a FastAPI application designed to calculate running paces for various distances. This API takes input parameters like minimum pace, maximum pace, and increment step, and returns a table of estimated running times for official race distances.
+The MyPacer API is a FastAPI application designed to calculate running paces for various distances. This API takes input parameters like minimum pace, maximum pace, and increment step, and returns a table of estimated running times for official race distances.
 
 The application also provides athlete data integration with the French Athletics Federation (FFA) database, allowing users to search for athletes and retrieve their performance records.
 
@@ -19,8 +19,8 @@ The application also provides athlete data integration with the French Athletics
 1. Clone the repository:
 
 ```bash
-git clone https://your-repository-url/running_pace_table.git
-cd running_pace_table
+git clone https://your-repository-url/mypacer_api.git
+cd mypacer_api
 ```
 
 2. Create a `.env` file with the required environment variables:
@@ -78,8 +78,8 @@ If you prefer to run the application without Docker:
 1. Clone the Repository:
 
 ```bash
-git clone https://your-repository-url/running_pace_table.git
-cd running_pace_table
+git clone https://your-repository-url/mypacer_api.git
+cd mypacer_api
 ```
 
 2. Create and Activate a Virtual Environment:
@@ -109,7 +109,7 @@ pip install -r requirements.txt
 5. Run the API:
 
 ```bash
-uvicorn running_pace_api.main:app --reload
+uvicorn mypacer_api.main:app --reload
 ```
 
 Or use the provided script:
@@ -163,8 +163,8 @@ The API provides the following endpoints:
 Create a `.env` file in the project root with the following variables:
 
 ```env
-POSTGRES_CONTAINER=running-pace-postgres
-POSTGRES_DB=running_pace_db
+POSTGRES_CONTAINER=mypacer-postgres
+POSTGRES_DB=mypacer_db
 POSTGRES_USER=your_username
 POSTGRES_PASSWORD=your_secure_password
 ```
@@ -212,15 +212,16 @@ make html
 ## Project Structure
 
 ```
-running_pace_api/
-├── running_pace_api/      # Main application package
+mypacer_api/
+├── mypacer_api/           # Main application package
 │   ├── main.py            # FastAPI application entry point
 │   ├── models.py          # Data models
 │   ├── dependencies.py    # Dependency injection
+│   ├── core/              # Core modules (calculator, database, scrapper)
 │   └── services/          # Business logic services
 ├── db/                    # Database files
 │   └── init.sql           # Database initialization script
-├── docs/                  # Sphinx documentation
+├── docs/                  # Documentation and optimization guides
 ├── tests/                 # Test files
 ├── Dockerfile             # Docker image definition
 ├── docker-compose.yml     # Docker services configuration (production)
@@ -267,7 +268,7 @@ docker-compose -f docker-compose.dev.yml up -d
 
 ## Contributing
 
-Feel free to contribute to the Running Pace Table API. If you encounter any issues or have suggestions, please open an issue or a pull request.
+Feel free to contribute to the MyPacer API. If you encounter any issues or have suggestions, please open an issue or a pull request.
 
 ## License
 

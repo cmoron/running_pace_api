@@ -48,7 +48,8 @@ sudo systemctl reload nginx
 #### 4. Builder le front avec la nouvelle config
 
 ```bash
-cd /home/cyril/src/running_pace_table
+# Dans le répertoire du projet front-end
+cd <frontend>
 
 # Le fichier .env.production est maintenant configuré avec VITE_API_URL=/api
 npm run build
@@ -79,7 +80,7 @@ sudo cp /etc/nginx/sites-enabled/mypacer.fr.backup /etc/nginx/sites-enabled/mypa
 sudo systemctl reload nginx
 
 # Rebuilder le front avec l'ancienne variable
-cd /home/cyril/src/running_pace_table
+cd <frontend>
 VITE_API_URL=https://api.mypacer.fr npm run build
 ```
 

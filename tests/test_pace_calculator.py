@@ -1,5 +1,5 @@
-from running_pace_api.core.calculator import calculate_pace_table
-from running_pace_api.models import OFFICIAL_DISTANCES
+from mypacer_api.core.calculator import calculate_pace_table
+from mypacer_api.models import OFFICIAL_DISTANCES
 
 def test_calculate_pace_table():
     min_pace = 600  # 10 minutes per km

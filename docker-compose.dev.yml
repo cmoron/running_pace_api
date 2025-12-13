@@ -16,7 +16,7 @@ services:
 
   api:
     build: .
-    container_name: running-pace-api-dev
+    container_name: mypacer-api-dev
     env_file: .env
     ports:
       - "8000:8000"
@@ -24,7 +24,7 @@ services:
       - postgres
     volumes:
       - .:/app  # Mount source code for hot reload
-    command: uvicorn running_pace_api.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn mypacer_api.main:app --host 0.0.0.0 --port 8000 --reload
 
 volumes:
   postgres_data:
