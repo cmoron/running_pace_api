@@ -31,6 +31,52 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/health")
+async def health_check():
+    """
+    Basic health check endpoint.
+
+    Returns:
+        dict: Status indicating the API is alive and responding.
+
+    This endpoint is used for:
+    - Docker/Kubernetes liveness probes
+    - Load balancer health checks
+    - Monitoring systems
+    """
+    return {"status": "healthy", "service": "mypacer-api"}
+
+@app.get("/health/ready")
+async def readiness_check():
+    """
+    Readiness check endpoint with database connectivity verification.
+
+    Returns:
+        dict: Status indicating the API is ready to handle requests.
+
+    Raises:
+        HTTPException: If the database is unreachable (503 Service Unavailable).
+
+    This endpoint verifies:
+    - API is running
+    - Database connection is available
+    """
+    try:
+        # Try to get database status to verify DB connection
+        db_status = database_service.get_database_status()
+        return {
+            "status": "ready",
+            "service": "mypacer-api",
+            "database": "connected",
+            "athletes_count": db_status.get("nb_athletes", 0)
+        }
+    except Exception as e:
+        from fastapi import HTTPException
+        raise HTTPException(
+            status_code=503,
+            detail=f"Service not ready: Database connection failed - {str(e)}"
+        )
+
 @app.post("/generate_table")
 async def generate_table(params: TableParameters):
     """
