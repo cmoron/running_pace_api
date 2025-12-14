@@ -4,7 +4,7 @@ Module containing functions for scraping running records from the World Athletic
 
 from typing import Dict
 import re
-from bs4 import BeautifulSoup as bs, Tag
+from bs4 import BeautifulSoup as bs
 import requests
 from fastapi import HTTPException
 

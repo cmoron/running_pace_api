@@ -2,10 +2,8 @@
 This module contains the service functions for the 'athletes' endpoint.
 """
 
-import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
-import requests
 from unidecode import unidecode
 from fastapi import HTTPException
 from mypacer_api.core import scrapper

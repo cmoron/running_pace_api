@@ -9,7 +9,6 @@ improving performance.
 import os
 import atexit
 from psycopg2 import pool
-from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
 
 load_dotenv()

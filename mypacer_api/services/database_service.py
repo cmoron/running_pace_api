@@ -1,7 +1,6 @@
 """
 This module contains functions that interact with the database.
 """
-import os
 from dotenv import load_dotenv
 import psycopg2
 from mypacer_api.core import database
