@@ -1,2 +1,2 @@
 source "venv/bin/activate"
-uvicorn running_pace_api.main:app --reload
+uvicorn mypacer_api.main:app --reload

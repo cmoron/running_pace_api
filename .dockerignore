@@ -1,0 +1,15 @@
+.git
+.github
+__pycache__
+.pytest_cache
+.venv
+*.pyc
+*.pyo
+*.pyd
+*.log
+db/backup.db.mypacer.sql
+db/*.dump
+htmlcov
+docker-compose*.yml
+README.md
+tests

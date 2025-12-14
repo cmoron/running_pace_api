@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:latest
+    image: postgres:16
     container_name: ${POSTGRES_CONTAINER}
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
@@ -10,13 +10,16 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./db:/var/lib/postgresql/db
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     restart: unless-stopped
 
   api:
-    build: .
-    container_name: running-pace-api-dev
+    build:
+      context: .
+      target: dev
+      args:
+        HOST_UID: ${HOST_UID}
+        HOST_GID: ${HOST_GID}
+    container_name: mypacer-api-dev
     env_file: .env
     ports:
       - "8000:8000"
@@ -24,7 +27,13 @@ services:
       - postgres
     volumes:
       - .:/app  # Mount source code for hot reload
-    command: uvicorn running_pace_api.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn mypacer_api.main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
 
 volumes:
   postgres_data:

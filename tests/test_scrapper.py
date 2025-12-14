@@ -1,10 +1,12 @@
 import pytest
 from bs4 import BeautifulSoup as bs
-from running_pace_api.core.scrapper import (
+
+from mypacer_api.core.scrapper import (
     ba_convert_time_to_seconds,
     parse_bases_athle_record_page,
-    scrap_athlete_records
+    scrap_athlete_records,
 )
+
 
 def test_ba_convert_time_to_seconds():
     """
@@ -13,7 +15,8 @@ def test_ba_convert_time_to_seconds():
     assert ba_convert_time_to_seconds("1h30'05\"") == 5405
     assert ba_convert_time_to_seconds("30'05\"") == 1805
     assert ba_convert_time_to_seconds("30'05\"50") == 1805.5
-    assert ba_convert_time_to_seconds("5\"50") == 5.5
+    assert ba_convert_time_to_seconds('5"50') == 5.5
+
 
 HTML_RECORDS = """
 <section data-content="section_5">
@@ -105,6 +108,7 @@ HTML_RECORDS = """
 </section>
 """
 
+
 def test_parse_bases_athle_record_page():
     """
     Test the parse_bases_athle_record_page function with a sample HTML input.
@@ -118,6 +122,7 @@ def test_parse_bases_athle_record_page():
     assert pytest.approx(records[1000], rel=1e-6) == 188.02
     assert records[5000] == 1138
     assert records[10000] == 2403
+
 
 def test_scrap_athlete_records():
     """
