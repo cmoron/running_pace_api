@@ -54,22 +54,30 @@ docker-compose down
 
 ### Development Mode with Hot Reload
 
-For development with automatic code reloading, use the dedicated development compose file:
+For development with automatic code reloading, use the dedicated development compose file.
+
+**Note for Linux/MacOS users:** To avoid file permission issues between your host machine and the container, it's crucial to run the application with the same user ID (UID) and group ID (GID) as your current user. The `Dockerfile` is configured to accept these as build arguments.
+
+Run the following command to start the development environment. It will build the image on first run, passing your user's UID/GID:
 
 ```bash
-docker-compose -f docker-compose.dev.yml up
+HOST_UID=$(id -u) HOST_GID=$(id -g) docker-compose -f docker-compose.dev.yml up --build
+```
+
+Once the container is built, you can start and stop it with:
+```bash
+# To start
+HOST_UID=$(id -u) HOST_GID=$(id -g) docker-compose -f docker-compose.dev.yml up
+
+# To run in detached mode
+HOST_UID=$(id -u) HOST_GID=$(id -g) docker-compose -f docker-compose.dev.yml up -d
 ```
 
 This configuration:
-- Mounts your source code as a volume for live reloading
-- Runs uvicorn with the `--reload` flag
-- Automatically restarts on code changes
+- Mounts your source code as a volume for live reloading.
+- Runs uvicorn with the `--reload` flag.
+- Ensures the container user has the correct permissions on the mounted source code.
 
-To run in detached mode:
-
-```bash
-docker-compose -f docker-compose.dev.yml up -d
-```
 
 ## Local Installation (Without Docker)
 

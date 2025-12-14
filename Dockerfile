@@ -28,7 +28,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 # =============================================================================
 FROM base AS prod
 
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+# Add ARGs for user and group IDs to be passed during build
+ARG HOST_UID=1000
+ARG HOST_GID=1000
+
+# Create a non-root user with specified UID and GID to match the host user
+# This avoids permission errors on mounted volumes in development
+RUN groupadd -g $HOST_GID -r appuser && useradd -u $HOST_UID -r -g appuser appuser
 
 # Copy application code
 COPY --chown=appuser:appuser mypacer_api/ ./mypacer_api/
