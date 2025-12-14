@@ -2,11 +2,13 @@
 Module containing functions for scraping running records from the World Athletics website.
 """
 
-from typing import Dict
 import re
-from bs4 import BeautifulSoup as bs
+from typing import Dict
+
 import requests
+from bs4 import BeautifulSoup as bs
 from fastapi import HTTPException
+
 
 def ba_convert_time_to_seconds(time_str: str) -> float:
     """
@@ -18,37 +20,42 @@ def ba_convert_time_to_seconds(time_str: str) -> float:
     Returns:
     float: The number of seconds represented by the time string.
     """
-    time_str = time_str.replace("''", "\"")
-    time_str = time_str.split(" ")[0] # Remove any additional information after the time
+    time_str = time_str.replace("''", '"')
+    time_str = time_str.split(" ")[
+        0
+    ]  # Remove any additional information after the time
     if not time_str:
-        return ""
+        return 0
+
+    total_seconds = 0.0
 
     # If the time string is in the format HHhmm'ss
-    if "h" in time_str and "'" in time_str and "\"" in time_str:
+    if "h" in time_str and "'" in time_str and '"' in time_str:
         hours, rest = time_str.split("h")
         minutes, seconds = rest.split("'")
-        seconds = seconds.replace("\"", "")
+        seconds = seconds.replace('"', "")
         total_seconds = int(hours) * 3600 + int(minutes) * 60 + int(seconds)
     # If the time string is in the format mm'ss or mm'ss"cc
-    elif "'" in time_str and "\"" in time_str:
+    elif "'" in time_str and '"' in time_str:
         # Split the time string into minutes and seconds
         minutes, seconds = time_str.split("'")
-        seconds, centiseconds = seconds.split("\"")
+        seconds, centiseconds = seconds.split('"')
         if centiseconds:
             seconds = f"{seconds}.{centiseconds}"
 
         # Calculate the total seconds
-        total_seconds = int(minutes) * 60 + float(seconds)
-    elif "\"" in time_str:
+        total_seconds = float(minutes) * 60.0 + float(seconds)
+    elif '"' in time_str:
         # Convert the time string to a float and multiply by 100 to get the number of centiseconds
-        seconds, centiseconds = time_str.split("\"")
+        seconds, centiseconds = time_str.split('"')
         # Calculate the total seconds
-        total_seconds = int(seconds) + int(centiseconds) / 100
+        total_seconds = float(seconds) + float(centiseconds) / 100.0
     else:
         total_seconds = -1
     return float(total_seconds)
 
-def parse_bases_athle_record_page(soup: bs) -> Dict[str, str]:
+
+def parse_bases_athle_record_page(soup: bs) -> Dict[float, float]:
     """
     Function to extract athlete data from a record page using BeautifulSoup.
 
@@ -65,14 +72,15 @@ def parse_bases_athle_record_page(soup: bs) -> Dict[str, str]:
         return {}
 
     # Find the table with class 'linedRed' or 'base-table'
-    table = section.find('table', class_='linedRed') or \
-            section.find('table', class_=re.compile(r'\bbase-table\b'))
+    table = section.find("table", class_="linedRed") or section.find(
+        "table", class_=re.compile(r"\bbase-table\b")
+    )
 
     if not table:
         return {}
 
     # Distance mapping in meters
-    distances = {
+    distances: dict[str, float] = {
         "100m": 100,
         "100m Piste Courte": 100,
         "200m": 200,
@@ -98,14 +106,14 @@ def parse_bases_athle_record_page(soup: bs) -> Dict[str, str]:
     }
 
     # Extract athlete records
-    athlete_records: Dict[int, float] = {}
-    for row in table.find_all('tr', recursive=False):
-        classes = row.get("class", [])
+    athlete_records: Dict[float, float] = {}
+    for row in table.find_all("tr", recursive=False):
+        classes = row.get("class", None) or []
 
         # Skip detail rows
         if "detail-row" in classes:
             continue
-        cols = row.find_all('td', recursive=False)
+        cols = row.find_all("td", recursive=False)
 
         # Skip rows that do not have at least 2 columns
         if len(cols) < 2:
@@ -133,7 +141,8 @@ def parse_bases_athle_record_page(soup: bs) -> Dict[str, str]:
 
     return athlete_records
 
-def scrap_athlete_records(url: str) -> Dict[str, str]:
+
+def scrap_athlete_records(url: str) -> Dict[float, float]:
     """
     Function to scrape athlete data from the 'bases.athle.fr' website.
 
@@ -147,5 +156,6 @@ def scrap_athlete_records(url: str) -> Dict[str, str]:
     if response.status_code == 200:
         soup = bs(response.text, "html.parser")
         return parse_bases_athle_record_page(soup)
-    raise HTTPException(status_code=response.status_code,
-                        detail="Failed to make an external request")
+    raise HTTPException(
+        status_code=response.status_code, detail="Failed to make an external request"
+    )

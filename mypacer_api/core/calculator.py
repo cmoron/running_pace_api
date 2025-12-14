@@ -1,10 +1,13 @@
 """
 Module containing functions for calculating running paces and times.
 """
-from typing import List, Dict
 
-def calculate_pace_table(min_pace: int, max_pace: int, increment: int,
-                         distances: list) -> List[Dict]:
+from typing import Dict, List
+
+
+def calculate_pace_table(
+    min_pace: int, max_pace: int, increment: int, distances: list
+) -> List[Dict]:
     """
     Calculate the pace table for given pace parameters.
 
@@ -24,8 +27,10 @@ def calculate_pace_table(min_pace: int, max_pace: int, increment: int,
     if max_pace > min_pace:
         raise ValueError("Minimum pace must be greater than maximum pace.")
     if increment <= 0:
-        raise ValueError("Increment must be positive and less than the difference between maximum\
-                and minimum pace.")
+        raise ValueError(
+            "Increment must be positive and less than the difference between maximum\
+                and minimum pace."
+        )
 
     # Pre-compute distance conversions and keys to avoid repeated calculations
     distance_data = [(str(d), d / 1000) for d in distances]
@@ -35,7 +40,7 @@ def calculate_pace_table(min_pace: int, max_pace: int, increment: int,
         {
             "pace": pace,
             "speed": round(3600 / pace, 2),
-            **{key: round(dist_km * pace, 2) for key, dist_km in distance_data}
+            **{key: round(dist_km * pace, 2) for key, dist_km in distance_data},
         }
         for pace in range(min_pace, max_pace - 1, -increment)
     ]

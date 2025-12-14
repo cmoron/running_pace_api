@@ -3,14 +3,15 @@ This module contains the service functions for the 'athletes' endpoint.
 """
 
 import psycopg2
+from dotenv import load_dotenv
+from fastapi import HTTPException
 from psycopg2.extras import RealDictCursor
 from unidecode import unidecode
-from fastapi import HTTPException
-from mypacer_api.core import scrapper
-from mypacer_api.core import database
-from dotenv import load_dotenv
+
+from mypacer_api.core import database, scrapper
 
 load_dotenv()
+
 
 def get_athletes_from_db(name: str, limit: int = 25, offset: int = 0) -> list:
     """
@@ -37,7 +38,7 @@ def get_athletes_from_db(name: str, limit: int = 25, offset: int = 0) -> list:
         cursor = conn.cursor(cursor_factory=RealDictCursor)
 
         # Normalize search query (same logic as database normalize_text function)
-        normalized_query = ' '.join(unidecode(name).lower().strip().split())
+        normalized_query = " ".join(unidecode(name).lower().strip().split())
         query_parts = normalized_query.split()
 
         # Build WHERE clause using normalized_name and ILIKE for trigram index usage
@@ -66,7 +67,7 @@ def get_athletes_from_db(name: str, limit: int = 25, offset: int = 0) -> list:
         """
 
         # Prepare search patterns for ILIKE (% wildcards for fuzzy matching)
-        search_patterns = [f'%{part}%' for part in query_parts]
+        search_patterns = [f"%{part}%" for part in query_parts]
 
         # Add the full normalized query for similarity calculation
         params = [normalized_query] + search_patterns + [limit, offset]
@@ -75,7 +76,9 @@ def get_athletes_from_db(name: str, limit: int = 25, offset: int = 0) -> list:
         results = cursor.fetchall()
 
     except psycopg2.Error as exc:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(exc)}") from exc
+        raise HTTPException(
+            status_code=500, detail=f"Database error: {str(exc)}"
+        ) from exc
     finally:
         if cursor:
             cursor.close()
@@ -84,6 +87,7 @@ def get_athletes_from_db(name: str, limit: int = 25, offset: int = 0) -> list:
             database.release_connection(conn)
 
     return results
+
 
 def get_athlete_records(ident) -> dict:
     """
@@ -116,10 +120,12 @@ def get_athlete_records(ident) -> dict:
         if not result:
             raise HTTPException(status_code=404, detail="Athlete not found.")
 
-        url = result['url']
+        url = result["url"]
 
     except psycopg2.Error as exc:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(exc)}") from exc
+        raise HTTPException(
+            status_code=500, detail=f"Database error: {str(exc)}"
+        ) from exc
     finally:
         if cursor:
             cursor.close()

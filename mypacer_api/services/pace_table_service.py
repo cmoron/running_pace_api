@@ -3,15 +3,19 @@ This module contains the pace table service, which is responsible for generating
 """
 
 from fastapi import HTTPException
+
 from mypacer_api.core import calculator
 
 # Simple cache for pace table results
 # Key: (min_pace, max_pace, increment, tuple of distances)
 # Value: calculated pace table
-_pace_table_cache = {}
+_pace_table_cache: dict = {}
 _MAX_CACHE_SIZE = 100
 
-def _get_cache_key(min_pace: int, max_pace: int, increment: int, distances: list) -> tuple:
+
+def _get_cache_key(
+    min_pace: int, max_pace: int, increment: int, distances: list
+) -> tuple:
     """
     Create a hashable cache key from the parameters.
 
@@ -26,7 +30,10 @@ def _get_cache_key(min_pace: int, max_pace: int, increment: int, distances: list
     """
     return (min_pace, max_pace, increment, tuple(sorted(distances)))
 
-def get_pace_table(min_pace: int, max_pace: int, increment: int, distances: list = None):
+
+def get_pace_table(
+    min_pace: int, max_pace: int, increment: int, distances: list = []
+) -> list:
     """
     Get a pace table for a given range of paces and increment.
     Results are cached to improve performance for repeated requests.
@@ -42,7 +49,9 @@ def get_pace_table(min_pace: int, max_pace: int, increment: int, distances: list
     with keys being the distances and values being the calculated times.
     """
     if max_pace > min_pace:
-        raise HTTPException(status_code=400, detail="Minimum pace must be more than maximum pace.")
+        raise HTTPException(
+            status_code=400, detail="Minimum pace must be more than maximum pace."
+        )
 
     # Check cache first
     cache_key = _get_cache_key(min_pace, max_pace, increment, distances)

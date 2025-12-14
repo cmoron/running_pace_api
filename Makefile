@@ -41,7 +41,7 @@ ci: ## Simulate the CI pipeline locally
 	ruff check . || (echo "❌ Linter check failed" && exit 1)
 	@echo "✅ Linter OK"
 	@echo "\n3. Type checking..."
-ypy mypacer_api/ --ignore-missing-imports || (echo "⚠️  Type checking has warnings/errors" && true)
+	mypy mypacer_api/ --ignore-missing-imports || (echo "⚠️  Type checking has warnings/errors" && true)
 	@echo "\n4. Running tests..."
-pytest || (echo "❌ Tests failed" && exit 1)
+	pytest || (echo "❌ Tests failed" && exit 1)
 	@echo "\n✅ All checks passed!"

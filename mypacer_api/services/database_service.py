@@ -1,11 +1,14 @@
 """
 This module contains functions that interact with the database.
 """
-from dotenv import load_dotenv
+
 import psycopg2
+from dotenv import load_dotenv
+
 from mypacer_api.core import database
 
 load_dotenv()
+
 
 def get_database_status():
     """
@@ -30,7 +33,8 @@ def get_database_status():
         cursor.execute("SELECT COUNT(*) FROM athletes;")
         num_athletes = cursor.fetchone()[0]
 
-        cursor.execute("""
+        cursor.execute(
+            """
         SELECT GREATEST(
             MAX(last_vacuum),
             MAX(last_autovacuum),
@@ -39,13 +43,14 @@ def get_database_status():
         ) AS last_update
         FROM pg_stat_all_tables
         WHERE relname = 'athletes';
-        """)
+        """
+        )
         last_update = cursor.fetchone()[0]
 
         return {
             "num_clubs": num_clubs,
             "num_athletes": num_athletes,
-            "last_update": last_update
+            "last_update": last_update,
         }
     except psycopg2.Error as exc:
         raise exc

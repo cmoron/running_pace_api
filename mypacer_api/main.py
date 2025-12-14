@@ -3,12 +3,12 @@ The Running Pace Table API is a FastAPI application designed to calculate runnin
 various distances.  This API  takes input  parameters  like minimum pace, maximum pace, and
 increment step, and returns a table of  estimated running times for official race distances.
 """
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from mypacer_api.models import TableParameters
-from mypacer_api.services import athletes_service
-from mypacer_api.services import pace_table_service
-from mypacer_api.services import database_service
+from mypacer_api.services import athletes_service, database_service, pace_table_service
 
 app = FastAPI()
 
@@ -31,6 +31,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/health")
 async def health_check():
     """
@@ -45,6 +46,7 @@ async def health_check():
     - Monitoring systems
     """
     return {"status": "healthy", "service": "mypacer-api"}
+
 
 @app.get("/health/ready")
 async def readiness_check():
@@ -68,14 +70,16 @@ async def readiness_check():
             "status": "ready",
             "service": "mypacer-api",
             "database": "connected",
-            "athletes_count": db_status.get("nb_athletes", 0)
+            "athletes_count": db_status.get("nb_athletes", 0),
         }
     except Exception as e:
         from fastapi import HTTPException
+
         raise HTTPException(
             status_code=503,
-            detail=f"Service not ready: Database connection failed - {str(e)}"
+            detail=f"Service not ready: Database connection failed - {str(e)}",
         )
+
 
 @app.post("/generate_table")
 async def generate_table(params: TableParameters):
@@ -91,7 +95,10 @@ async def generate_table(params: TableParameters):
     Returns:
     List[Dict]: A table of calculated times for each distance at each pace.
     """
-    return pace_table_service.get_pace_table(params.min_pace, params.max_pace, params.increment, params.distances)
+    return pace_table_service.get_pace_table(
+        params.min_pace, params.max_pace, params.increment, params.distances
+    )
+
 
 @app.get("/get_athletes")
 async def get_athletes(name: str, limit: int = 25, offset: int = 0):
@@ -132,6 +139,7 @@ async def get_athletes(name: str, limit: int = 25, offset: int = 0):
 
     return athletes_service.get_athletes_from_db(name, limit=limit, offset=offset)
 
+
 @app.get("/get_athletes_from_db")
 async def get_athletes_from_db(name: str, limit: int = 25, offset: int = 0):
     """
@@ -157,6 +165,7 @@ async def get_athletes_from_db(name: str, limit: int = 25, offset: int = 0):
 
     return athletes_service.get_athletes_from_db(name, limit=limit, offset=offset)
 
+
 @app.get("/get_athlete_records")
 async def get_athlete_records(ident) -> dict:
     """
@@ -169,6 +178,7 @@ async def get_athlete_records(ident) -> dict:
     dict: A dictionary containing the athlete's records for various disciplines and distances.
     """
     return athletes_service.get_athlete_records(ident)
+
 
 @app.get("/database_status")
 async def database_status():
