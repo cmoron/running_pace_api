@@ -120,6 +120,16 @@ Or use the provided script:
 
 The API will be available at http://localhost:8000.
 
+## CI/CD & Docker Images
+
+- `.github/workflows/ci.yml` exécute les tests avec PostgreSQL sur chaque push/PR.
+- `.github/workflows/docker.yml` construit et pousse l'image multi-stage (cible `prod`) vers GHCR : `ghcr.io/cmoron/mypacer_api:latest-prod` (tags semver/sha aussi).
+- Pour une construction locale :
+  ```bash
+  docker build -t mypacer_api:dev --target dev .
+  docker build -t mypacer_api:latest-prod --target prod .
+  ```
+
 ## API Documentation
 
 Once the application is running, you can access:
