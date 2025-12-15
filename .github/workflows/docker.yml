@@ -109,26 +109,70 @@ jobs:
             --notes-file changelog.txt \
             --verify-tag
 
-      - name: Add Docker image info to release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          VERSION=${{ steps.changelog.outputs.version }}
-          gh release edit "$VERSION" --notes-file - <<EOF
-          $(cat changelog.txt)
-          ## 🐳 Docker Image
-          Pull the production image from GitHub Container Registry:
-          ```bash
-          # Specific version
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}-prod
-          # Or latest stable
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-prod
-          ```
-          ## 📦 Package Info
-          View packages: https://github.com/${{ github.repository }}/pkgs/container/${{ github.event.repository.name }}
-          ## 💻 Local development
-          The dev image is available through docker-compose :
-          ```bash
-          docker-compose -f docker-compose.dev.yml up
-          ```
-          EOF
+            - name: Add Docker image info to release
+
+              env:
+
+                GH_TOKEN: ${{ github.token }}
+
+              run: |
+
+                VERSION=${{ steps.changelog.outputs.version }}
+
+      
+
+                # Add Docker pull commands to release notes
+
+                gh release edit "$VERSION" --notes-file - <<EOF
+
+                $(cat changelog.txt)
+
+      
+
+                ## 🐳 Docker Image
+
+      
+
+                Pull the production image from GitHub Container Registry:
+
+      
+
+                \`\`\`bash
+
+                # Version spécifique
+
+                docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}-prod
+
+      
+
+                # Ou la dernière version stable
+
+                docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-prod
+
+                \`\`\`
+
+      
+
+                ## 📦 Package Info
+
+      
+
+                View packages: https://github.com/${{ github.repository }}/pkgs/container/${{ github.event.repository.name }}
+
+      
+
+                ## 💻 Développement Local
+
+      
+
+                L'image de développement est disponible via docker-compose :
+
+                \`\`\`bash
+
+                docker-compose -f docker-compose.dev.yml up --build
+
+                \`\`\`
+
+                EOF
+
+      
