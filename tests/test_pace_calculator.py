@@ -1,3 +1,5 @@
+import pytest
+
 from mypacer_api.core.calculator import calculate_pace_table
 from mypacer_api.models import OFFICIAL_DISTANCES
 
@@ -31,3 +33,24 @@ def test_calculate_pace_table():
     result_same_pace = calculate_pace_table(min_pace, min_pace, increment, [])
     assert len(result_same_pace) == 1
     assert result_same_pace[0]["pace"] == min_pace
+
+
+def test_calculate_pace_table_errors():
+    """Test that calculate_pace_table raises errors for invalid inputs."""
+    # Test with non-positive min_pace
+    with pytest.raises(ValueError, match="Minimum pace must be positive"):
+        calculate_pace_table(0, -10, 1, [])
+    with pytest.raises(ValueError, match="Minimum pace must be positive"):
+        calculate_pace_table(-10, -20, 1, [])
+
+    # Test with max_pace > min_pace
+    with pytest.raises(
+        ValueError, match="Minimum pace must be greater than maximum pace"
+    ):
+        calculate_pace_table(180, 600, 2, [])
+
+    # Test with non-positive increment
+    with pytest.raises(ValueError, match="Increment must be positive"):
+        calculate_pace_table(600, 180, 0, [])
+    with pytest.raises(ValueError, match="Increment must be positive"):
+        calculate_pace_table(600, 180, -2, [])

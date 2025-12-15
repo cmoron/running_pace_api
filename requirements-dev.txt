@@ -1,3 +1,6 @@
 ruff
 black
 mypy
+pytest-cov
+pytest-mock
+httpx

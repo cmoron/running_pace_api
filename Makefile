@@ -9,6 +9,10 @@ install: ## Install development dependencies
 test: ## Run tests
 	pytest -v
 
+coverage: ## Lance les tests avec coverage
+	pytest --cov=mypacer_api --cov-report=term-missing --cov-report=html
+	@echo "📊 Rapport HTML généré dans htmlcov/index.html"
+
 lint: ## Check code quality (ruff + mypy)
 	@echo "Linting with ruff..."
 	ruff check .
@@ -42,6 +46,6 @@ ci: ## Simulate the CI pipeline locally
 	@echo "✅ Linter OK"
 	@echo "\n3. Type checking..."
 	mypy mypacer_api/ --ignore-missing-imports || (echo "⚠️  Type checking has warnings/errors" && true)
-	@echo "\n4. Running tests..."
-	pytest || (echo "❌ Tests failed" && exit 1)
+	@echo "\n4. Running tests with coverage..."
+	pytest --cov=mypacer_api --cov-report=term-missing || (echo "❌ Tests failed" && exit 1)
 	@echo "\n✅ All checks passed!"

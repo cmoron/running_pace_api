@@ -32,6 +32,7 @@ venv/
 *.pyc
 __pycache__/
 /tmp
+.coverage
 
 # db generate csv files
 db/*.csv

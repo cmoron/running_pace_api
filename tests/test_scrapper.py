@@ -1,5 +1,6 @@
 import pytest
 from bs4 import BeautifulSoup as bs
+from fastapi import HTTPException
 
 from mypacer_api.core.scrapper import (
     ba_convert_time_to_seconds,
@@ -124,6 +125,7 @@ def test_parse_bases_athle_record_page():
     assert records[10000] == 2403
 
 
+@pytest.mark.skip(reason="This test makes a real network request and can be flaky.")
 def test_scrap_athlete_records():
     """
     Test the scrap_athlete_records function with a real URL.
@@ -136,3 +138,20 @@ def test_scrap_athlete_records():
     assert pytest.approx(records[1000], rel=1e-6) == 188.02
     assert records[5000] == 1127
     assert records[10000] == 2403
+
+
+def test_scrap_athlete_records_error(mocker):
+    """
+    Test that scrap_athlete_records raises an HTTPException for non-200 responses.
+    """
+    # Mock the requests.get call
+    mock_response = mocker.Mock()
+    mock_response.status_code = 404
+    mocker.patch("requests.get", return_value=mock_response)
+
+    # Assert that an HTTPException is raised
+    with pytest.raises(HTTPException) as excinfo:
+        scrap_athlete_records("http://dummyurl.com")
+
+    # Check that the status code of the exception is correct
+    assert excinfo.value.status_code == 404
