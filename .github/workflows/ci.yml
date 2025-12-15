@@ -29,6 +29,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for SonarCloud analysis
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -49,3 +51,10 @@ jobs:
           POSTGRES_USER: test_user
           POSTGRES_PASSWORD: test_pass
         run: make ci
+
+      - name: SonarCloud Scan
+        if: github.event.action == 'opened' || github.event.action == 'synchronize' || github.event_name == 'push'
+        uses: SonarSource/sonarqube-scan-action@v2.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

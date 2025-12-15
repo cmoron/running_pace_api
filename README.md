@@ -1,5 +1,8 @@
 # MyPacer API
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=cmoron_mypacer_api&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=cmoron_mypacer_api)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=cmoron_mypacer_api&metric=coverage)](https://sonarcloud.io/summary/new_code?id=cmoron_mypacer_api)
+
 ## Overview
 
 The MyPacer API is a FastAPI application designed to calculate running paces for various distances. This API takes input parameters like minimum pace, maximum pace, and increment step, and returns a table of estimated running times for official race distances.
