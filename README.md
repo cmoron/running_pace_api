@@ -1,6 +1,11 @@
 # MyPacer API
 
 [![CI](https://github.com/cmoron/mypacer_api/actions/workflows/ci.yml/badge.svg)](https://github.com/cmoron/mypacer_api/actions/workflows/ci.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=cmoron_mypacer_api&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=cmoron_mypacer_api)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=cmoron_mypacer_api&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=cmoron_mypacer_api)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=cmoron_mypacer_api&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=cmoron_mypacer_api)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=cmoron_mypacer_api&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=cmoron_mypacer_api)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=cmoron_mypacer_api&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=cmoron_mypacer_api)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
