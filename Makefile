@@ -47,5 +47,5 @@ ci: ## Simulate the CI pipeline locally
 	@echo "\n3. Type checking..."
 	mypy mypacer_api/ --ignore-missing-imports || (echo "⚠️  Type checking has warnings/errors" && true)
 	@echo "\n4. Running tests with coverage..."
-	pytest --cov=mypacer_api --cov-report=xml --cov-report=term-missing || (echo "❌ Tests failed" && exit 1)
+	pytest --cov=mypacer_api --cov-report=term-missing || (echo "❌ Tests failed" && exit 1)
 	@echo "\n✅ All checks passed!"
