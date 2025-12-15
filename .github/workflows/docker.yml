@@ -23,14 +23,14 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349  # v3.7.1
 
       - name: Log in to GitHub Container Registry
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@v3
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567  # v3.3.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -38,7 +38,7 @@ jobs:
 
       - name: Extract metadata (tags, labels)
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81  # v5.5.1
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
@@ -54,9 +54,10 @@ jobs:
 
       - name: Build and push Docker image
         id: build-and-push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75  # v6.9.0
         with:
           context: .
+          target: prod
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -66,7 +67,7 @@ jobs:
 
       - name: Generate artifact attestation
         if: github.event_name != 'pull_request'
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@1c608d11d69870c2092266b3f9a6f3abbf17002c  # v2.0.0
         with:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           subject-digest: ${{ steps.build-and-push.outputs.digest }}
@@ -82,20 +83,27 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           fetch-depth: 0
 
       - name: Generate changelog
         id: changelog
         run: |
+          # Get the previous tag
           PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          # Generate changelog
           if [ -z "$PREV_TAG" ]; then
             CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges)
           else
             CHANGELOG=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
           fi
+
+          # Save changelog to a file
           echo "$CHANGELOG" > changelog.txt
+
+          # Extract version from tag
           VERSION=${GITHUB_REF#refs/tags/}
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
@@ -109,70 +117,36 @@ jobs:
             --notes-file changelog.txt \
             --verify-tag
 
-            - name: Add Docker image info to release
+      - name: Add Docker image info to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=${{ steps.changelog.outputs.version }}
 
-              env:
+          # Add Docker pull commands to release notes
+          gh release edit "$VERSION" --notes-file - <<EOF
+          $(cat changelog.txt)
 
-                GH_TOKEN: ${{ github.token }}
+          ## 🐳 Docker Image
 
-              run: |
+          Pull the production image from GitHub Container Registry:
 
-                VERSION=${{ steps.changelog.outputs.version }}
+          \`\`\`bash
+          # Version spécifique
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}-prod
 
-      
+          # Ou la dernière version stable
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-prod
+          \`\`\`
 
-                # Add Docker pull commands to release notes
+          ## 📦 Package Info
 
-                gh release edit "$VERSION" --notes-file - <<EOF
+          View packages: https://github.com/${{ github.repository }}/pkgs/container/${{ github.event.repository.name }}
 
-                $(cat changelog.txt)
+          ## 💻 Développement Local
 
-      
-
-                ## 🐳 Docker Image
-
-      
-
-                Pull the production image from GitHub Container Registry:
-
-      
-
-                \`\`\`bash
-
-                # Version spécifique
-
-                docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}-prod
-
-      
-
-                # Ou la dernière version stable
-
-                docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-prod
-
-                \`\`\`
-
-      
-
-                ## 📦 Package Info
-
-      
-
-                View packages: https://github.com/${{ github.repository }}/pkgs/container/${{ github.event.repository.name }}
-
-      
-
-                ## 💻 Développement Local
-
-      
-
-                L'image de développement est disponible via docker-compose :
-
-                \`\`\`bash
-
-                docker-compose -f docker-compose.dev.yml up --build
-
-                \`\`\`
-
-                EOF
-
-      
+          L'image de développement est disponible via docker-compose :
+          \`\`\`bash
+          docker-compose up --build
+          \`\`\`
+          EOF
