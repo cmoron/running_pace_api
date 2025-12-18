@@ -1,0 +1,53 @@
+name: Deploy to Staging
+
+on:
+  workflow_run:
+    workflows: ["Docker Build & Publish"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy-staging:
+    name: Deploy to Staging Server
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set -e
+
+            echo "🚀 Starting deployment to staging..."
+            cd ${{ secrets.INFRA_PATH }}
+
+            echo "📥 Pulling latest staging image..."
+            docker-compose -f docker-compose.staging.yml pull api-staging
+
+            echo "🔄 Restarting API container..."
+            docker-compose -f docker-compose.staging.yml up -d api-staging
+
+            echo "⏳ Waiting for container to be healthy..."
+            sleep 5
+
+            echo "✅ Deployment completed!"
+            docker-compose -f docker-compose.staging.yml ps api-staging
+
+      - name: Verify deployment
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            echo "🔍 Checking API health endpoint..."
+            curl -f https://stage.mypacer.fr/api/health || (echo "❌ API is not responding!" && exit 1)
+            echo "✅ API is healthy!"
