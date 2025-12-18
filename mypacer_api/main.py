@@ -12,15 +12,11 @@ from mypacer_api.services import athletes_service, database_service, pace_table_
 
 app = FastAPI()
 
+# CORS only needed for local development (Vite dev server on different port)
+# In production, API is served via /api reverse proxy (same origin = no CORS needed)
 allowed_origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://allures.moron.at",
-    "https://allures.moron.at",
-    "http://mypacer.fr",
-    "https://mypacer.fr",
-    "http://www.mypacer.fr",
-    "https://www.mypacer.fr",
 ]
 
 app.add_middleware(
