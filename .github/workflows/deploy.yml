@@ -2,7 +2,7 @@ name: Deploy to Staging
 
 on:
   workflow_run:
-    workflows: ["Docker Build & Publish - mypacer_api"]
+    workflows: ["Docker Build & Publish"]
     types: [completed]
     branches: [main]
 
