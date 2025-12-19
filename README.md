@@ -12,9 +12,12 @@
 
 ## Overview
 
-The MyPacer API is a FastAPI application designed to calculate running paces for various distances. This API takes input parameters like minimum pace, maximum pace, and increment step, and returns a table of estimated running times for official race distances.
+The MyPacer API is the engine behind the MyPacer ecosystem. It serves two main functional domains:
 
-The application also provides athlete data integration with the French Athletics Federation (FFA) database, allowing users to search for athletes and retrieve their performance records.
+1.  **Pacing Engine**: A mathematical core that generates dynamic pace tables based on user constraints (min/max pace, increments, custom distances).
+2.  **FFA Data Gateway**: A bridge to French Athletics Federation data (`athle.fr`).
+    * **Smart Search**: Exposes a fuzzy-search endpoint over a local database of athletes (populated by the scraper) to solve the usability issues of the official website.
+    * **Live Records**: Fetches and parses athlete personal records (PRs) on-demand for real-time visualization.
 
 ## Prerequisites
 
