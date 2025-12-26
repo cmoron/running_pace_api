@@ -34,7 +34,10 @@ ARG HOST_GID=1000
 
 # Create a non-root user with specified UID and GID to match the host user
 # This avoids permission errors on mounted volumes in development
-RUN groupadd -g $HOST_GID -r appuser && useradd -u $HOST_UID -r -g appuser appuser
+# Use -o flag to allow non-unique GID/UID (safe in isolated Docker container)
+# This handles cases where GID/UID already exists (e.g., macOS GID 20 = staff)
+RUN groupadd -o -g $HOST_GID -r appuser && \
+    useradd -o -u $HOST_UID -r -g appuser appuser
 
 # Copy application code
 COPY --chown=appuser:appuser mypacer_api/ ./mypacer_api/

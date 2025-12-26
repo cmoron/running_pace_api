@@ -29,40 +29,19 @@ The MyPacer API is the engine behind the MyPacer ecosystem. It serves two main f
 
 ### Production Deployment
 
-1. Clone the repository:
+Le déploiement en production de l'API MyPacer est géré par le projet parent [mypacer_infra](https://github.com/cmoron/mypacer_infra) qui orchestre l'ensemble des microservices MyPacer (API, frontend, base de données) via son propre `docker-compose.yml`.
+
+Pour déployer l'API en production :
+
+1. Référez-vous au projet [cmoron/mypacer_infra](https://github.com/cmoron/mypacer_infra) pour les instructions de déploiement complet
+2. L'image Docker de production est disponible sur GHCR : `ghcr.io/cmoron/mypacer_api:latest-prod`
+
+Configuration requise (à définir dans le `.env` du projet mypacer_infra) :
 
 ```bash
-git clone https://your-repository-url/mypacer_api.git
-cd mypacer_api
-```
-
-2. Create a `.env` file with the required environment variables:
-
-```bash
-POSTGRES_CONTAINER=mypacer_pgsql
 POSTGRES_DB=mypacer
 POSTGRES_USER=your_username
 POSTGRES_PASSWORD=your_secure_password
-```
-
-3. Build and start the services:
-
-```bash
-docker-compose up -d
-```
-
-4. The API will be available at http://localhost:8000
-
-5. To view logs:
-
-```bash
-docker-compose logs -f api
-```
-
-6. To stop the services:
-
-```bash
-docker-compose down
 ```
 
 ### Development Mode with Hot Reload
@@ -74,16 +53,16 @@ For development with automatic code reloading, use the dedicated development com
 Run the following command to start the development environment. It will build the image on first run, passing your user's UID/GID:
 
 ```bash
-HOST_UID=$(id -u) HOST_GID=$(id -g) docker-compose -f docker-compose.dev.yml up --build
+HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -f docker-compose.dev.yml up --build
 ```
 
 Once the container is built, you can start and stop it with:
 ```bash
 # To start
-HOST_UID=$(id -u) HOST_GID=$(id -g) docker-compose -f docker-compose.dev.yml up
+HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -f docker-compose.dev.yml up
 
 # To run in detached mode
-HOST_UID=$(id -u) HOST_GID=$(id -g) docker-compose -f docker-compose.dev.yml up -d
+HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -f docker-compose.dev.yml up -d
 ```
 
 This configuration:
@@ -191,27 +170,61 @@ The API provides the following endpoints:
 
 ### Environment Variables
 
-Create a `.env` file in the project root with the following variables:
+Create a `.env` file in the project root with the following variables (or copy from `.env.example`):
 
 ```env
-POSTGRES_CONTAINER=mypacer-postgres
+POSTGRES_CONTAINER=mypacer-db
 POSTGRES_DB=mypacer_db
 POSTGRES_USER=your_username
 POSTGRES_PASSWORD=your_secure_password
 ```
 
-### Database Initialization
+### Database Schema Management
 
-The PostgreSQL database is automatically initialized with the `db/init.sql` script on first startup.
+**Schema Ownership:**
+- ✅ **Source of truth**: `mypacer_infra/init-db/01-init-schema.sql` (production/staging)
+- 📋 **Local copy**: `db/init.sql` (development only, for autonomous dev)
+
+In development mode (`docker-compose.dev.yml`), the PostgreSQL database is automatically initialized with the `db/init.sql` script on first startup.
+
+**To reset your local development database:**
+
+```bash
+# Stop containers and remove volumes
+docker compose -f docker-compose.dev.yml down -v
+
+# Restart (will reinitialize the schema)
+HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -f docker-compose.dev.yml up
+```
+
+**Note:** The `db/init.sql` file is a local copy for development autonomy. If the schema evolves, ensure it stays in sync with the reference in `mypacer_infra`.
+
+### Test Data
+
+The development environment automatically loads test data from `db/02-test-data.sql` on first startup:
+
+- **15 clubs** - Representative clubs from different regions of France
+- **~50 athletes** - Diverse profiles (male/female, different birth years, nationalities including FRA, MAR, GER, CGO)
+
+This data is extracted from a production backup and allows you to:
+- Test search functionality with realistic names
+- Test filtering by gender, nationality, birth year
+- Develop features without requiring the scraper to run
+
+**The test data includes:**
+- Clubs: CA MONTREUIL 93, CLERMONT AUVERGNE ATHLETISME, RACING CF (PARIS), etc.
+- Athletes: ranging from 1934 to 1996 birth years
+- Mix of ~35 male and ~15 female athletes
+- International athletes (French, Moroccan, German, Congolese)
 
 ## Testing
 
 To run the test suite:
 
-With Docker:
+With Docker (development):
 
 ```bash
-docker-compose exec api pytest
+docker-compose -f docker-compose.dev.yml exec api pytest
 ```
 
 Without Docker:
@@ -255,7 +268,6 @@ mypacer_api/
 ├── docs/                  # Documentation and optimization guides
 ├── tests/                 # Test files
 ├── Dockerfile             # Docker image definition
-├── docker-compose.yml     # Docker services configuration (production)
 ├── docker-compose.dev.yml # Docker services configuration (development)
 ├── requirements.txt       # Python dependencies
 └── README.md              # This file
@@ -265,7 +277,7 @@ mypacer_api/
 
 ### Port Already in Use
 
-If port 8000 or 5432 is already in use, modify the port mappings in `docker-compose.yml` or `docker-compose.dev.yml`:
+If port 8000 or 5432 is already in use, modify the port mappings in `docker-compose.dev.yml`:
 
 ```yaml
 ports:
@@ -277,8 +289,8 @@ ports:
 Ensure the PostgreSQL container is running and healthy:
 
 ```bash
-docker-compose ps
-docker-compose logs postgres
+docker compose -f docker-compose.dev.yml ps
+docker compose -f docker-compose.dev.yml logs postgres
 ```
 
 ### Rebuild After Code Changes
@@ -286,15 +298,8 @@ docker-compose logs postgres
 If you make changes to dependencies, rebuild the Docker image:
 
 ```bash
-docker-compose build
-docker-compose up -d
-```
-
-Or for development:
-
-```bash
-docker-compose -f docker-compose.dev.yml build
-docker-compose -f docker-compose.dev.yml up -d
+docker compose -f docker-compose.dev.yml build
+docker compose -f docker-compose.dev.yml up -d
 ```
 
 ## Contributing

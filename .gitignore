@@ -37,4 +37,7 @@ __pycache__/
 # db generate csv files
 db/*.csv
 
+# db backups (exclude production backups from git)
+db/backup_*.sql
+
 /.venv
