@@ -1,0 +1,94 @@
+name: Deploy to Production
+
+on:
+  workflow_run:
+    workflows: ['Docker Build & Publish']
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to deploy (e.g., v1.2.3)'
+        required: true
+        type: string
+      dry_run:
+        description: 'Dry run (no actual deployment)'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  deploy-production:
+    name: Deploy to Production Server
+    if: |
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       startsWith(github.event.workflow_run.head_branch, 'v')) ||
+      github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            VERSION="${{ github.event.workflow_run.head_branch }}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Deploying version: $VERSION"
+
+      - name: Deploy via SSH
+        if: ${{ !inputs.dry_run }}
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set -e
+
+            echo "🚀 Starting deployment to production..."
+            cd ${{ secrets.INFRA_PATH }}
+
+            echo "📥 Pulling production image (version: ${{ steps.version.outputs.version }})..."
+            docker compose -f docker-compose.prod.yml pull api
+
+            echo "🔄 Restarting API container..."
+            docker compose -f docker-compose.prod.yml up -d api
+
+            echo "⏳ Waiting for container to be healthy..."
+            sleep 10
+
+            echo "✅ Deployment completed!"
+            docker compose -f docker-compose.prod.yml ps api
+
+      - name: Dry run info
+        if: ${{ inputs.dry_run }}
+        run: |
+          echo "🧪 DRY RUN MODE - No actual deployment performed"
+          echo "Would deploy version: ${{ steps.version.outputs.version }}"
+          echo "Target: Production (mypacer.fr)"
+          echo "Container: api"
+
+      - name: Verify deployment
+        if: ${{ !inputs.dry_run }}
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            echo "🔍 Checking API health endpoint..."
+            curl -f https://mypacer.fr/api/health || (echo "❌ API is not responding!" && exit 1)
+            echo "✅ API is healthy!"
+
+      - name: Notify deployment success
+        if: ${{ !inputs.dry_run }}
+        run: |
+          echo "🎉 Successfully deployed ${{ steps.version.outputs.version }} to production!"
+          echo "🌐 API URL: https://mypacer.fr/api"
