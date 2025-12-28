@@ -33,11 +33,14 @@ jobs:
 
       - name: Extract version
         id: version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          WORKFLOW_BRANCH: ${{ github.event.workflow_run.head_branch }}
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            VERSION="${{ inputs.version }}"
+            VERSION="$INPUT_VERSION"
           else
-            VERSION="${{ github.event.workflow_run.head_branch }}"
+            VERSION="$WORKFLOW_BRANCH"
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Deploying version: $VERSION"
